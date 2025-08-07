@@ -3,16 +3,16 @@ import graphviz
 import os
 from collections import defaultdict
 
+debug = 0
+
 # Initiate the graph
 dot = graphviz.Digraph(comment="Inferred Spouse Pairs", format='pdf')
-#dot = graphviz.Graph(engine='patchwork') 
-#fdp, sfdp, twopi, circo
-#dot.attr(fontsize='10', arrowhead='none', nodesep='2', ranksep='2',rankdir='TB', splines='line',overlap='scale')
-dot.attr(fontsize='50', arrowhead='none', nodesep='1', ranksep='3',rankdir='TB',size = "33.11,23.39")
+dot.attr(fontsize='30', arrowhead='none', nodesep='1', ranksep='3',rankdir='TB',size = "33.11,23.39")
 
 # Path of the GEDCOM file
-#path = "/Users/oncel/Desktop/tayyarnew.ged"
-path = "/Users/oncel/Desktop/eminesitki.ged"
+path = "/Users/oncel/Desktop/tayyarnew.ged"
+#path = "/Users/oncel/Desktop/eminesitki.ged"
+#path = "/Users/oncel/Desktop/kennedy.ged"
 
 # Parse the GEDCOM file
 with GedcomReader(path) as parser:
@@ -38,7 +38,8 @@ with GedcomReader(path) as parser:
                     obj = obje_records.get(sub.value)
                     if obj:
                         image_path = obj.sub_tag_value("FILE")
-                        print('indi:',indi,'img path2:',image_path)
+                        if debug>0:
+                            print('indi:',indi,'img path2:',image_path)
                 else:  # It's inline OBJE
                     image_path = sub.sub_tag_value("FILE")
                 if image_path:
@@ -62,7 +63,8 @@ with GedcomReader(path) as parser:
             label = " ".join(part for part in name if part).replace("/", "") if isinstance(name, tuple) else name
             shape = "ellipse" if gender == "F" else "box"
             image_path = indi_image_paths.get(i_id)
-            print('img path:',image_path)
+            if debug>0:
+                print('img path:',image_path)
             if image_path and os.path.isfile(image_path) and occup:
                 dot.node(i_id, label=f'''<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
@@ -88,7 +90,8 @@ with GedcomReader(path) as parser:
 
     # Infer couples: anyone who shares a FAMS is likely a couple
     for fam_id, people in fams_to_people.items():
-            print('famId:',fam_id)
+            if debug>0:
+                print('famId:',fam_id)
             marriage_node = f"m_{fam_id}"
             dot.node(marriage_node, label="", shape="point", width="1")
 
@@ -106,54 +109,16 @@ with GedcomReader(path) as parser:
                         minlen_parents_str='2'
                     dot.edge(p1.xref_id, marriage_node, dir="none", style="solid",minlen=minlen_parents_str)
                     dot.edge(marriage_node, p2.xref_id, dir="none", style="solid",minlen=minlen_parents_str)
-                print('parents:',p1.xref_id,p2.xref_id)
+                    if debug>0:
+                        print('parents:',p1.xref_id,p2.xref_id)
                 for fam_idchild, children in famc_to_people.items():
                     if fam_id==fam_idchild:
-                        print('n children:',len(children))
+                        if debug>0:
+                            print('n children:',len(children))
                         minlen_str='2'
-                        if len(children) == 1:
-                           c1 = children[0]
-                           print(c1.xref_id)
+                        for c in range(0,len(children)):
+                           c1 = children[c]
                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(children) == 2:
-                            c1,c2 = children
-                            print(c1.xref_id,c2.xref_id)
-                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(children) == 3:
-                            c1,c2,c3 = children
-                            print(c1.xref_id,c2.xref_id,c3.xref_id)
-                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(children) == 4:
-                            c1,c2,c3,c4 = children
-                            print(c1.xref_id,c2.xref_id,c3.xref_id,c4.xref_id)
-                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c4.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(children) == 5:
-                            c1,c2,c3,c4,c5 = children
-                            print(c1.xref_id,c2.xref_id,c3.xref_id,c4.xref_id,c5.xref_id)
-                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c4.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c5.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(children) == 6:
-                            c1,c2,c3,c4,c5,c6 = children
-                            print(c1.xref_id,c2.xref_id,c3.xref_id,c4.xref_id,c5.xref_id,c6.xref_id)
-                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c4.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c5.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                            dot.edge(marriage_node, c6.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(people) > 6:
-                            print(f"Family {fam_id} has more than 6 kids?!")
-                    #else:
-                    #    print('famid not eq to famidchild!')
             elif len(people) > 2:
                 print(f"Family {fam_id} has more than 2 spouses?! -> {[p.xref_id for p in people]}")
 print("done.")
