@@ -11,7 +11,8 @@ dot = graphviz.Digraph(comment="Inferred Spouse Pairs", format='pdf')
 dot.attr(fontsize='50', arrowhead='none', nodesep='1', ranksep='3',rankdir='TB',size = "33.11,23.39")
 
 # Path of the GEDCOM file
-path = "/Users/oncel/Desktop/tayyarnew.ged"
+#path = "/Users/oncel/Desktop/tayyarnew.ged"
+path = "/Users/oncel/Desktop/eminesitki.ged"
 
 # Parse the GEDCOM file
 with GedcomReader(path) as parser:
@@ -47,7 +48,7 @@ with GedcomReader(path) as parser:
     for i_id, indi in individuals.items():
         #print('i_id:',i_id)
         #if i_id in {f"@I{str(i).zfill(4)}@" for i in range(68, 112)}:
-        if i_id != '@I0066@':
+        #if i_id != '@I0066@':
             name = indi.sub_tag_value("NAME")
             if name and '/' in name:
                 parts = name.split('/')
@@ -57,17 +58,25 @@ with GedcomReader(path) as parser:
                 given = name
                 surname = ""
             gender = indi.sub_tag_value("SEX")
+            occup = indi.sub_tag_value("OCCU")
             label = " ".join(part for part in name if part).replace("/", "") if isinstance(name, tuple) else name
             shape = "ellipse" if gender == "F" else "box"
             image_path = indi_image_paths.get(i_id)
             print('img path:',image_path)
-            if image_path and os.path.isfile(image_path):
+            if image_path and os.path.isfile(image_path) and occup:
                 dot.node(i_id, label=f'''<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR> <TD FIXEDSIZE="TRUE" WIDTH="600" HEIGHT="600"><IMG SRC="{image_path}" SCALE="TRUE"/></TD></TR>
+  <TR><TD><FONT POINT-SIZE="100">{label}<BR/>{occup}</FONT></TD></TR>
+</TABLE>
+>''', shape='none')
+            elif image_path and os.path.isfile(image_path) and not occup:
+                 dot.node(i_id, label=f'''<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
   <TR> <TD FIXEDSIZE="TRUE" WIDTH="600" HEIGHT="600"><IMG SRC="{image_path}" SCALE="TRUE"/></TD></TR>
   <TR><TD><FONT POINT-SIZE="100">{label}</FONT></TD></TR>
 </TABLE>
->''', shape='none')
+>''', shape='none')               
             else:
                 #dot.node(i_id, label=label, shape=shape)
                 dot.node(i_id, label=f'''<
@@ -89,9 +98,9 @@ with GedcomReader(path) as parser:
                     s.attr(rank='same')
                     s.node(p1.xref_id)
                     s.node(p2.xref_id)
-                    #if fam_id in {f"@F{str(i).zfill(4)}@" for i in range(0, 10)}:
+                    if fam_id in {f"@F{str(i).zfill(4)}@" for i in range(10, 10)} or fam_id in {f"@F{str(i).zfill(4)}@" for i in range(34, 40)} or fam_id in {f"@F{str(i).zfill(4)}@" for i in range(5, 10)}:
                     #    print(fam_id)
-                    if fam_id=='@F0000@' or fam_id=='@F0001@' or fam_id=='@F0002@' or fam_id=='@F0003@' or fam_id=='@F0004@'or fam_id=='@F0005@' or fam_id=='@F0006@' or fam_id=='@F0007@' or fam_id=='@F0008@' or fam_id=='@F0009@' or fam_id=='@F0015@' or fam_id=='@F0016@'or fam_id=='@F0033@' or fam_id=='@F0034@' or fam_id=='@F0039@' or fam_id=='F0035':
+                    #if fam_id=='@F0000@' or fam_id=='@F0001@' or fam_id=='@F0002@' or fam_id=='@F0003@' or fam_id=='@F0004@'or fam_id=='@F0005@' or fam_id=='@F0006@' or fam_id=='@F0007@' or fam_id=='@F0008@' or fam_id=='@F0009@' or fam_id=='@F0015@' or fam_id=='@F0016@'or fam_id=='@F0033@' or fam_id=='@F0034@' or fam_id=='@F0039@' or fam_id=='F0035':
                         minlen_parents_str='0'
                     else:
                         minlen_parents_str='2'
@@ -124,13 +133,30 @@ with GedcomReader(path) as parser:
                             dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
                             dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
                             dot.edge(marriage_node, c4.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
-                        elif len(people) > 4:
-                            print(f"Family {fam_id} has more than 4 kids?!")
+                        elif len(children) == 5:
+                            c1,c2,c3,c4,c5 = children
+                            print(c1.xref_id,c2.xref_id,c3.xref_id,c4.xref_id,c5.xref_id)
+                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c4.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c5.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                        elif len(children) == 6:
+                            c1,c2,c3,c4,c5,c6 = children
+                            print(c1.xref_id,c2.xref_id,c3.xref_id,c4.xref_id,c5.xref_id,c6.xref_id)
+                            dot.edge(marriage_node, c1.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c2.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c3.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c4.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c5.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                            dot.edge(marriage_node, c6.xref_id, arrowhead='none',concentrate='true',minlen=minlen_str)
+                        elif len(people) > 6:
+                            print(f"Family {fam_id} has more than 6 kids?!")
                     #else:
                     #    print('famid not eq to famidchild!')
             elif len(people) > 2:
                 print(f"Family {fam_id} has more than 2 spouses?! -> {[p.xref_id for p in people]}")
 print("done.")
 #dot.unflatten(stagger=3)
-dot.render("inferred_spouses", view=True)
+dot.render("eminesitki", view=True)
 print("Rendered inferred_spouses.pdf")
