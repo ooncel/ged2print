@@ -7,5 +7,7 @@ This program takes the GEDCOM file as input and creates an image output with fol
 - Text font
 - Image size
 
-
-
+## Known issues
+ 1. A married status must be defined between father and mother for proper rendering of descendants
+ 2. The earliest ancestor generation is not sorted in correct order automatically by the program. It currently requires fine tuning of minlen parameter by hand
+ 3. Images must be in PNG or PDF format. JPEG images will crash the program.
